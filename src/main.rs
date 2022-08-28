@@ -19,7 +19,7 @@ pub struct Cli {
     #[clap(short, long, help = "Use an file as input instead of command line")]
     file: Option<PathBuf>,
 
-    #[clap(short = 'n', default_value = "1000")]
+    #[clap(short = 'n', default_value = "1000000")]
     iterations: usize,
 
     #[clap(short, long, help = "Return as 24 word seed phrase [default: 12]")]
@@ -46,7 +46,7 @@ fn main() {
     let cli = Cli::parse();
 
     let input = cli.get_input();
-    let input = hash_iterations(input, cli.iterations);
+    let input = hash_iterations(&input, cli.iterations);
 
     let input = if cli.long {
         input.as_ref()
@@ -62,11 +62,13 @@ fn exit_with_error(msg: &str) -> ! {
     std::process::exit(1)
 }
 
-fn hash_iterations(mut input: Vec<u8>, iterations: usize) -> Vec<u8> {
-    for _ in 0..iterations {
-        let mut hasher = Sha256::new();
+fn hash_iterations(input: &[u8], iterations: usize) -> Vec<u8> {
+    let mut hasher = Sha256::new();
+    hasher.update(input);
+    let mut input = hasher.finalize_reset();
+    for _ in 1..iterations {
         hasher.update(&input);
-        input = hasher.finalize().to_vec();
+        hasher.finalize_into_reset(&mut input);
     }
-    input
+    input.to_vec()
 }

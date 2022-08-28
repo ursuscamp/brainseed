@@ -1,11 +1,9 @@
-use std::path::PathBuf;
+use std::{fs::write, io::Write, path::PathBuf};
 
 use clap::Parser;
 use sha2::{Digest, Sha256};
 
 // TODO: add tests
-// TODO: add option to output raw seed instead of seed phrase
-// TODO: add option to output to file instead of stdout
 
 #[derive(clap::Parser)]
 pub struct Cli {
@@ -26,6 +24,9 @@ pub struct Cli {
 
     #[clap(short, long, help = "Do not normalize valid UTF-8 strings")]
     unnormalized: bool,
+
+    #[clap(short, long, help = "Output to file")]
+    output: Option<PathBuf>,
 }
 
 impl Cli {
@@ -48,6 +49,16 @@ impl Cli {
             attempt_normalize(data)
         }
     }
+
+    fn write_output(&self, data: &[u8]) {
+        if let Some(path) = &self.output {
+            if let Err(e) = write(path, data) {
+                exit_with_error(&format!("Error writing output file: {e}"));
+            }
+        } else {
+            std::io::stdout().write(data).ok();
+        }
+    }
 }
 
 fn main() {
@@ -62,7 +73,7 @@ fn main() {
         &input[..16]
     };
     let seed = bip39::Mnemonic::from_entropy(input).unwrap();
-    println!("{seed}");
+    cli.write_output(seed.to_string().as_bytes());
 }
 
 fn exit_with_error(msg: &str) -> ! {

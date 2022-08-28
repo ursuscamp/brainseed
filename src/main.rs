@@ -3,7 +3,6 @@ use std::path::PathBuf;
 use clap::Parser;
 use sha2::{Digest, Sha256};
 
-// TODO: conduct normalization on the input phrase
 // TODO: add tests
 // TODO: add option to output raw seed instead of seed phrase
 // TODO: add option to output to file instead of stdout
@@ -24,21 +23,30 @@ pub struct Cli {
 
     #[clap(short, long, help = "Return as 24 word seed phrase [default: 12]")]
     long: bool,
+
+    #[clap(short, long, help = "Do not normalize valid UTF-8 strings")]
+    unnormalized: bool,
 }
 
 impl Cli {
     fn get_input(&self) -> Vec<u8> {
-        if let Some(input) = &self.input {
-            return input.as_bytes().to_vec();
+        let data = if let Some(input) = &self.input {
+            input.as_bytes().to_vec()
         } else if let Some(file) = &self.file {
             if let Ok(contents) = std::fs::read(file) {
-                return contents;
+                contents
             } else {
                 exit_with_error("Unable to read file.");
             }
-        }
+        } else {
+            exit_with_error("No input given.");
+        };
 
-        exit_with_error("No input given.");
+        if self.unnormalized {
+            data
+        } else {
+            attempt_normalize(data)
+        }
     }
 }
 
@@ -71,4 +79,79 @@ fn hash_iterations(input: &[u8], iterations: usize) -> Vec<u8> {
         hasher.finalize_into_reset(&mut input);
     }
     input.to_vec()
+}
+
+/// Remove invalid characters, then remove consecutive spaces ("   " becomes " "),
+/// then finally trim all whitespace from the ends of the string.
+fn normalize(data: &str) -> String {
+    let mut next_str = String::with_capacity(data.len());
+    let start = remove_invalid_chars(data);
+
+    let mut skip_ws = false;
+    for ch in start.chars() {
+        if ch == ' ' && !skip_ws {
+            next_str.push(ch);
+            skip_ws = true;
+        } else if ch != ' ' {
+            next_str.push(ch);
+            skip_ws = false;
+        }
+    }
+
+    next_str.trim().to_string()
+}
+
+/// Convert all ASCII characters to lowercase and remove invalid characters.
+/// Valid characters are [a-z0-9 ].
+fn remove_invalid_chars(data: &str) -> String {
+    let mut next_str = String::with_capacity(data.len());
+    let start = data.to_ascii_lowercase();
+
+    for ch in start.chars() {
+        if ('a'..'z').contains(&ch) || ('0'..'9').contains(&ch) || ch == ' ' {
+            next_str.push(ch);
+        }
+    }
+
+    next_str
+}
+
+/// This will attempt to normalize data. If the data is a valid UTF-8 string, then it will normalize it.
+/// If it is not valid UTF-8, then it assumes the file is binary and passes it straight through.
+fn attempt_normalize(data: Vec<u8>) -> Vec<u8> {
+    if let Ok(string) = std::str::from_utf8(&data) {
+        normalize(string).into_bytes()
+    } else {
+        data
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_remove_invalid_chars() {
+        assert_eq!(
+            remove_invalid_chars(" Hel!lo 1    world!  "),
+            " hello 1    world  "
+        );
+    }
+
+    #[test]
+    fn test_normalize() {
+        assert_eq!(normalize("  Hel!lo    1  !    WORLD!!   "), "hello 1 world");
+        assert_eq!(normalize("hello    world   !"), "hello world");
+    }
+
+    #[test]
+    fn test_attempt_normalize() {
+        assert_eq!(
+            attempt_normalize(b"  hellO  1  WoRlD!!!   ".to_vec()),
+            b"hello 1 world".to_vec()
+        );
+
+        let data = include_bytes!("../test/junk.dat");
+        assert_eq!(attempt_normalize(data.to_vec()), data);
+    }
 }

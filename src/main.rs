@@ -1,9 +1,8 @@
 use std::{fs::write, io::Write, path::PathBuf};
 
+use bip39::Mnemonic;
 use clap::Parser;
 use sha2::{Digest, Sha256};
-
-// TODO: add tests
 
 #[derive(clap::Parser)]
 pub struct Cli {
@@ -43,11 +42,7 @@ impl Cli {
             exit_with_error("No input given.");
         };
 
-        if self.unnormalized {
-            data
-        } else {
-            attempt_normalize(data)
-        }
+        data
     }
 
     fn write_output(&self, data: &[u8]) {
@@ -65,15 +60,19 @@ fn main() {
     let cli = Cli::parse();
 
     let input = cli.get_input();
-    let input = hash_iterations(&input, cli.iterations);
-
-    let input = if cli.long {
-        input.as_ref()
-    } else {
-        &input[..16]
-    };
-    let seed = bip39::Mnemonic::from_entropy(input).unwrap();
+    let seed = seed(input, cli.iterations, cli.long, cli.unnormalized);
     cli.write_output(seed.to_string().as_bytes());
+}
+
+fn seed(input: Vec<u8>, iterations: usize, long: bool, unnormalized: bool) -> Mnemonic {
+    let input = if unnormalized {
+        input
+    } else {
+        attempt_normalize(input)
+    };
+    let input = hash_iterations(&input, iterations);
+    let input = if long { input.as_ref() } else { &input[..16] };
+    bip39::Mnemonic::from_entropy(input).unwrap()
 }
 
 fn exit_with_error(msg: &str) -> ! {
@@ -164,5 +163,40 @@ mod tests {
 
         let data = include_bytes!("../test/junk.dat");
         assert_eq!(attempt_normalize(data.to_vec()), data);
+    }
+
+    fn normal_input() -> Vec<u8> {
+        "hello world".as_bytes().to_vec()
+    }
+
+    fn abnormal_input() -> Vec<u8> {
+        "Hel!lo    wo!RLD!   ".as_bytes().to_vec()
+    }
+
+    #[test]
+    fn test_seed_phrase_short() {
+        let expected = "rich hard unveil charge stadium affair net ski style stadium helmet void";
+        assert_eq!(seed(normal_input(), 1, false, false).to_string(), expected);
+    }
+
+    #[test]
+    fn test_seed_phrase_short_abnormal() {
+        let expected = "rich hard unveil charge stadium affair net ski style stadium helmet void";
+        assert_eq!(
+            seed(abnormal_input(), 1, false, false).to_string(),
+            expected
+        );
+    }
+
+    #[test]
+    fn test_long_seed_phrase() {
+        let expected = "rich hard unveil charge stadium affair net ski style stadium helmet void embark jewel mistake engine liberty innocent captain urban soda jewel dash daring";
+        assert_eq!(seed(normal_input(), 1, true, false).to_string(), expected);
+    }
+
+    #[test]
+    fn test_long_seed_phrase_abnormal() {
+        let expected = "rich hard unveil charge stadium affair net ski style stadium helmet void embark jewel mistake engine liberty innocent captain urban soda jewel dash daring";
+        assert_eq!(seed(abnormal_input(), 1, true, false).to_string(), expected);
     }
 }

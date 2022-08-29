@@ -13,7 +13,7 @@ pub struct Cli {
     #[clap(short, long, help = "Use an file as input instead of command line")]
     pub file: Option<PathBuf>,
 
-    #[clap(short = 'n', default_value = "1000000")]
+    #[clap(short = 'n', default_value = "10000000")]
     pub iterations: usize,
 
     #[clap(short, long, help = "Return as 24 word seed phrase [default: 12]")]

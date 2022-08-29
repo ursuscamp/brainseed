@@ -6,6 +6,8 @@ use clap::Parser;
 use cli::Cli;
 use generator::Generator;
 
+// TODO: Add an option to view normalized phrase for troubleshooting.
+
 fn main() {
     let cli = Cli::parse();
 

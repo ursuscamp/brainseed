@@ -10,16 +10,16 @@ pub struct Cli {
     )]
     pub input: Option<String>,
 
-    #[clap(short, long, help = "Use an file as input instead of command line")]
+    #[clap(short, long, help = "Use a file as input instead of command line")]
     pub file: Option<PathBuf>,
 
     #[clap(short = 'n', default_value = "10000000")]
     pub iterations: usize,
 
-    #[clap(short, long, help = "Return as 24 word seed phrase [default: 12]")]
+    #[clap(short, long, help = "Return a 24 word seed phrase [default: 12]")]
     pub long: bool,
 
-    #[clap(short, long, help = "Do not normalize valid UTF-8 strings")]
+    #[clap(short, long, help = "Do not normalize input data")]
     pub unnormalized: bool,
 
     #[clap(short, long, help = "Output to file")]

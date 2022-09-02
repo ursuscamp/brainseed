@@ -13,7 +13,11 @@ pub struct Cli {
     #[clap(short, long, help = "Use a file as input instead of command line")]
     pub file: Option<PathBuf>,
 
-    #[clap(short = 'n', default_value = "10000000")]
+    #[clap(
+        short = 'n',
+        default_value = "10000000",
+        help = "Number of times to hash the passphrase"
+    )]
     pub iterations: usize,
 
     #[clap(short, long, help = "Return a 24 word seed phrase [default: 12]")]
@@ -24,6 +28,9 @@ pub struct Cli {
 
     #[clap(short, long, help = "Output to file")]
     pub output: Option<PathBuf>,
+
+    #[clap(long, help = "Only output the normalized input and quit")]
+    pub normalized_only: bool,
 }
 
 impl Cli {

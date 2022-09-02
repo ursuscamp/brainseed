@@ -8,6 +8,8 @@ $ ezseed "hello world"
 cliff burden nut payment negative soccer one mad pulse balcony force inside
 ```
 
+**WARNING**: Please note this is experimental software at this time. It is very simple, but be warned, there could be bugs lurking, and the algorithm may change based on feedback.
+
 ## Frequently Asked Questions
 
 ### This is horrible. Why would you do such a thing?

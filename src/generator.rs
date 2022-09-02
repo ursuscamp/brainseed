@@ -20,6 +20,11 @@ impl Generator {
         bip39::Mnemonic::from_entropy(self.entropy()).unwrap()
     }
 
+    /// Return a reference to internal data.
+    pub fn data(&self) -> &[u8] {
+        &self.data
+    }
+
     /// Should this generator attempt to normalize the input?
     fn should_normalize(&self) -> bool {
         !self.unnormalized
@@ -27,7 +32,7 @@ impl Generator {
 
     /// Remove invalid characters, then remove consecutive spaces ("   " becomes " "),
     /// then finally trim all whitespace from the ends of the string.
-    fn normalize(&self, data: &str) -> String {
+    pub fn normalize(&self, data: &str) -> String {
         let mut next_str = String::with_capacity(data.len());
         let start = self.remove_invalid_chars(data);
 

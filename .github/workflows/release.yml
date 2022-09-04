@@ -18,14 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - run: cargo build --release
-      - run: zip -j rust-test-${{ github.ref_name }}-${{ runner.os }}-${{ runner.arch }}.zip target/release/rust-test
+      - run: zip -j brainseed-${{ github.ref_name }}-${{ runner.os }}-${{ runner.arch }}.zip target/release/brainseed
         if: runner.os != 'Windows'
-      - run: Compress-Archive -Path .\target\release\rust-test.exe -DestinationPath .\rust-test-${{ github.ref_name }}-${{ runner.os }}-${{ runner.arch }}.zip
+      - run: Compress-Archive -Path .\target\release\brainseed.exe -DestinationPath .\brainseed-${{ github.ref_name }}-${{ runner.os }}-${{ runner.arch }}.zip
         if: runner.os == 'Windows'
       - name: Archive zip file
         uses: actions/upload-artifact@v3
         with:
-          name: rust-test-${{ github.ref_name }}-${{ runner.os }}-${{ runner.arch }}.zip
+          name: brainseed-${{ github.ref_name }}-${{ runner.os }}-${{ runner.arch }}.zip
           path: '*.zip'
 
 

@@ -1,10 +1,10 @@
-# ezseed
+# brainseed
 
-`ezseed` is a terminal utility to generate a BIP-39 compatible seed phrase from deterministic "entropy". It accepts a passphrase and uses that passphrase as the input for an algorithm to deterministically create a 12 (or 24) word BIP-39 seed phrase.
+`brainseed` is a terminal utility to generate a BIP-39 compatible seed phrase from deterministic "entropy". It accepts a passphrase and uses that passphrase as the input for an algorithm to deterministically create a 12 (or 24) word BIP-39 seed phrase.
 
 
 ```shell
-$ ezseed "hello world"
+$ brainseed "hello world"
 cliff burden nut payment negative soccer one mad pulse balcony force inside
 ```
 
@@ -51,11 +51,12 @@ To help with brute force resistance, it uses 10,000,000 iterations of SHA-256, w
 
 I would suggest disabling normalization.
 
-Also, if you want, you don't need to use UTF-8 text. You can can pass in any data, and if it doesn't recognize it as a UTF-8 compatible string, it will skip normalization completely. For example, a favorite song:
+Also, if you want, you don't need to use UTF-8 text. You can can pass in any data, and if it doesn't recognize it as a UTF-8 compatible string, it will skip normalization completely. For example, random data:
 
 ```shell
-$ ezseed -f "Blind Guardian - Mirror Mirror.mp3"
-scale unknown injury drip together slender scheme mask warrior talent common happy
+$ cat /dev/urandom | head -c 1024 > junk.dat
+$ brainseed -f junk.dat
+arch few liar output sadness page lunch much swap much funny pupil
 ```
 
 You may also want to pass in `-u` to force stop normalization, just in case, by some random chance, the bytes in your binary file happen to form a valid UTF-8 string.
@@ -73,6 +74,6 @@ Yup, that's a danger. Use a phrase meaningful to you, not a famous movie line or
 If you absolutely must use a famous movie line, then salt it with some other meaningful data, like the year you lost your viriginity, e.g.:
 
 ```shell
-ezseed "there's no crying in baseball never"
-vintage hotel mechanic major inner shield ready side wealth fresh replace clock
+$ brainseed "there's no crying in baseball never"
+merit permit chef reveal month pizza elbow cheap actual under cargo march
 ```

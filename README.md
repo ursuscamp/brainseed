@@ -30,38 +30,17 @@ BIP-39 seed phrases have become the lingua franca of Bitcoin key management. Alm
 
 After providing a passphrase to the utility it:
 
-1. Normalizes valid UTF-8 input to prevent some input entry errors:
-   * Converts it to ASCII lowercase.
-   * Removes invalid characters. Valid characters are `[a-z0-9 ]`.
-   * Condenses consecutive spaces to one space.
-   * Removes beginning and trailing spaces.
-   * For example: `"Hello WORLD!!!!"` becomes `"hello world"`.
-2. Hashes it with SHA-256 ten million times.
+1. Take some input, typically a passphrase.
+2. Hashes it with SHA-256 ten million times (by default).
 3. Uses the result as entropy to generate a 12 or 24 word BIP-39 seed phrase.
 
 ### Is this not poor security?
 
-Well, humans are relatively predictable, so it won't stand up to brute force attacks like a random seed phrase will. On the other hand, it might also be better opsec to have a passphrase that is hard to forget and only in your head, instead of a random phrase that you have to keep a physical copy just to remember.
+Well, humans are relatively predictable, so it won't stand up to brute force attacks like a random seed mnemonic will. On the other hand, it might also be better opsec to have a passphrase that is hard to forget and only in your head, instead of a random phrase that you have to keep a physical copy just to remember.
 
 In a pinch, it may be a good way to flee a hostile area with your wealth intact.
 
-To help with brute force resistance, it uses 10,000,000 iterations of SHA-256, which takes several seconds on my modern MacBook. If you wish to opt for additional security, you can increase the default number of iterations and also turn off normalization.
-
-### What if I wish to use non-Latin alphabet?
-
-I would suggest disabling normalization.
-
-Also, if you want, you don't need to use UTF-8 text. You can can pass in any data, and if it doesn't recognize it as a UTF-8 compatible string, it will skip normalization completely. For example, random data:
-
-```shell
-$ cat /dev/urandom | head -c 1024 > junk.dat
-$ brainseed -f junk.dat
-arch few liar output sadness page lunch much swap much funny pupil
-```
-
-You may also want to pass in `-u` to force stop normalization, just in case, by some random chance, the bytes in your binary file happen to form a valid UTF-8 string.
-
-However, this may be less secure than a passphrase since you must store that file somewhere. YMMV
+To help with brute force resistance, it uses 10,000,000 iterations of SHA-256, which takes several seconds on my modern MacBook. If you wish to opt for additional security, you can increase the default number of iterations.
 
 ### How can I generate a 24 word phrase?
 
@@ -69,7 +48,7 @@ Use the `-l` or `--long` flag to get a 24 word seed phrase.
 
 ### What about rainbow tables?
 
-Yup, that's a danger. Use a phrase meaningful to you, not a famous movie line or something. Also consider using a custom number of SHA-256 iterations as this will help foil rainbow attacks.
+Yup, that's a danger. Use a phrase meaningful to you, not a famous movie line or something like that. Also consider using a custom number of SHA-256 iterations as this will help foil rainbow attacks.
 
 If you absolutely must use a famous movie line, then salt it with some other meaningful data, like the year you lost your viriginity, e.g.:
 

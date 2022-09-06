@@ -23,14 +23,8 @@ pub struct Cli {
     #[clap(short, long, help = "Return a 24 word seed phrase [default: 12]")]
     pub long: bool,
 
-    #[clap(short, long, help = "Do not normalize input data")]
-    pub unnormalized: bool,
-
     #[clap(short, long, help = "Output to file")]
     pub output: Option<PathBuf>,
-
-    #[clap(long, help = "Only output the normalized input and quit")]
-    pub normalized_only: bool,
 }
 
 impl Cli {

@@ -54,10 +54,11 @@ dependencies = [
 
 [[package]]
 name = "brainseed"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "bip39",
  "clap",
+ "rpassword",
  "sha2",
 ]
 
@@ -247,6 +248,16 @@ name = "rand_core"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c33a3c44ca05fa6f1807d8e6743f3824e8509beca625669633be0acbdf509dc"
+
+[[package]]
+name = "rpassword"
+version = "7.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26b763cb66df1c928432cc35053f8bd4cec3335d8559fc16010017d16b3c1680"
+dependencies = [
+ "libc",
+ "winapi",
+]
 
 [[package]]
 name = "serde"

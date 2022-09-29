@@ -23,6 +23,9 @@ pub struct Cli {
     #[clap(short, long, help = "Return a 24 word seed phrase [default: 12]")]
     pub long: bool,
 
+    #[clap(short, long, help = "Prompt for passphrase instead of shell argument")]
+    pub prompt: bool,
+
     #[clap(short, long, help = "Output to file")]
     pub output: Option<PathBuf>,
 }
@@ -36,6 +39,12 @@ impl Cli {
                 contents
             } else {
                 exit_with_error("Unable to read file.");
+            }
+        } else if self.prompt {
+            if let Ok((true, pass)) = self.get_password() {
+                pass.as_bytes().to_vec()
+            } else {
+                exit_with_error("Entropy prompt does not match.");
             }
         } else {
             exit_with_error("No input given.");
@@ -52,5 +61,11 @@ impl Cli {
         } else {
             std::io::stdout().write(data).ok();
         }
+    }
+
+    fn get_password(&self) -> std::io::Result<(bool, String)> {
+        let pass = rpassword::prompt_password("Entropy phrase: ")?;
+        let confirm = rpassword::prompt_password("Confirm: ")?;
+        Ok((pass == confirm, pass))
     }
 }

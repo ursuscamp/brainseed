@@ -1,4 +1,4 @@
-use bip39::Mnemonic;
+use bdk::keys::bip39::Mnemonic;
 use sha2::{Digest, Sha256};
 
 use crate::cli::Cli;
@@ -13,7 +13,7 @@ impl Generator {
     /// This is the entry point for the struct.
     pub fn seed(&mut self) -> Mnemonic {
         self.hash_iterations();
-        bip39::Mnemonic::from_entropy(self.entropy()).unwrap()
+        Mnemonic::from_entropy(self.entropy()).unwrap()
     }
 
     /// Returns the entropy needed for genearting the BIP-39 mnemonic.

@@ -1,6 +1,6 @@
 use std::{io::Write, path::PathBuf};
 
-use crate::util::exit_with_error;
+use crate::{generator::Generator, util::exit_with_error};
 
 #[derive(clap::Parser, Clone)]
 pub struct Cli {
@@ -16,7 +16,27 @@ pub struct Cli {
 }
 
 impl Cli {
-    pub fn get_input(&self) -> Vec<u8> {
+    pub fn exec(&self) {
+        let input = self.get_input();
+        match &self.action {
+            Action::Seed { long, output } => self.seed(input, *long, output),
+            Action::Sign => self.sign(),
+        }
+    }
+
+    fn seed(&self, input: Vec<u8>, long: bool, output: &Option<PathBuf>) {
+        let mut gen = Generator {
+            input,
+            iterations: self.iterations,
+            long,
+        };
+        let seed = gen.seed();
+        self.write_output(output, seed.to_string().as_bytes());
+    }
+
+    fn sign(&self) {}
+
+    fn get_input(&self) -> Vec<u8> {
         if let Ok((true, pass)) = self.get_password() {
             pass.as_bytes().to_vec()
         } else {
@@ -24,15 +44,13 @@ impl Cli {
         }
     }
 
-    pub fn write_output(&self, data: &[u8]) {
-        if let Action::Seed { long: _, output } = &self.action {
-            if let Some(path) = output {
-                if let Err(e) = std::fs::write(path, data) {
-                    exit_with_error(&format!("Error writing output file: {e}"));
-                }
-            } else {
-                std::io::stdout().write(data).ok();
+    fn write_output(&self, output: &Option<PathBuf>, data: &[u8]) {
+        if let Some(path) = output {
+            if let Err(e) = std::fs::write(path, data) {
+                exit_with_error(&format!("Error writing output file: {e}"));
             }
+        } else {
+            std::io::stdout().write(data).ok();
         }
     }
 

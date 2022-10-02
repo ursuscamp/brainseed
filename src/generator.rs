@@ -1,7 +1,10 @@
 use bdk::keys::bip39::Mnemonic;
 use sha2::{Digest, Sha256};
 
-use crate::cli::Cli;
+use crate::{
+    cli::{Action, Cli},
+    util::exit_with_error,
+};
 
 pub struct Generator {
     data: Vec<u8>,
@@ -41,11 +44,14 @@ impl Generator {
 
 impl From<Cli> for Generator {
     fn from(cli: Cli) -> Self {
-        Generator {
-            data: cli.get_input(),
-            iterations: cli.iterations,
-            long: cli.long,
+        if let Action::Seed { long, output: _ } = cli.action {
+            return Generator {
+                data: cli.get_input(),
+                iterations: cli.iterations,
+                long,
+            };
         }
+        exit_with_error("Invalid application state!");
     }
 }
 

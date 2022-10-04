@@ -1,51 +1,39 @@
-use bip39::Mnemonic;
+use bdk::keys::bip39::Mnemonic;
 use sha2::{Digest, Sha256};
 
-use crate::cli::Cli;
-
 pub struct Generator {
-    data: Vec<u8>,
-    iterations: usize,
-    long: bool,
+    pub input: Vec<u8>,
+    pub iterations: usize,
+    pub long: bool,
 }
 
 impl Generator {
     /// This is the entry point for the struct.
     pub fn seed(&mut self) -> Mnemonic {
         self.hash_iterations();
-        bip39::Mnemonic::from_entropy(self.entropy()).unwrap()
+        Mnemonic::from_entropy(self.entropy()).unwrap()
     }
 
     /// Returns the entropy needed for genearting the BIP-39 mnemonic.
     fn entropy(&self) -> &[u8] {
         if self.long {
-            self.data.as_ref()
+            self.input.as_ref()
         } else {
-            &self.data[..16]
+            &self.input[..16]
         }
     }
 
     /// Itearte the hash function repeatedly on the input data.
     fn hash_iterations(&mut self) {
         let mut hasher = Sha256::new();
-        hasher.update(&self.data);
+        hasher.update(&self.input);
         let mut data = hasher.finalize_reset();
         for _ in 1..self.iterations {
             hasher.update(&data);
             hasher.finalize_into_reset(&mut data);
         }
 
-        self.data = data.to_vec();
-    }
-}
-
-impl From<Cli> for Generator {
-    fn from(cli: Cli) -> Self {
-        Generator {
-            data: cli.get_input(),
-            iterations: cli.iterations,
-            long: cli.long,
-        }
+        self.input = data.to_vec();
     }
 }
 
@@ -56,7 +44,7 @@ mod tests {
 
         pub fn gen12(data: &str) -> Generator {
             Generator {
-                data: data.into(),
+                input: data.into(),
                 iterations: 1,
                 long: false,
             }
@@ -64,7 +52,7 @@ mod tests {
 
         pub fn gen24(data: &str) -> Generator {
             Generator {
-                data: data.into(),
+                input: data.into(),
                 iterations: 1,
                 long: true,
             }

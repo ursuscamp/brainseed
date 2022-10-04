@@ -37,7 +37,7 @@ impl Cli {
         match &self.action {
             Action::Seed => self.write_output(seed.to_string().as_bytes()),
             Action::Sign { input, output } => self.sign(input, output, seed),
-            Action::Descriptor => self.show_descriptor(seed),
+            Action::Watch => self.show_descriptor(seed),
         }
     }
 
@@ -120,6 +120,6 @@ pub enum Action {
     /// Sign a bitcoin transaction file.
     Sign { input: PathBuf, output: PathBuf },
 
-    /// Show wallet descriptor.
-    Descriptor,
+    /// Show wallet descriptor that is useful for importing as a watch-only wallet.
+    Watch,
 }

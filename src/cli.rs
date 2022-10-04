@@ -26,6 +26,10 @@ pub struct Cli {
     #[clap(short, long)]
     long: bool,
 
+    /// Switch to testnet mode
+    #[clap(short, long)]
+    testnet: bool,
+
     #[clap(subcommand)]
     pub action: Action,
 }
@@ -72,11 +76,11 @@ impl Cli {
         let xkey: ExtendedKey<miniscript::Segwitv0> = seed
             .into_extended_key()
             .context("Failed to convert mnemonic into an extended key")?;
-        let xprv = xkey.into_xprv(Network::Testnet).unwrap();
+        let xprv = xkey.into_xprv(self.network()).unwrap();
         Wallet::new(
             Bip84(xprv.clone(), KeychainKind::External),
             Some(Bip84(xprv.clone(), KeychainKind::External)),
-            Network::Testnet,
+            self.network(),
             MemoryDatabase::default(),
         )
         .context("Failed to create wallet")
@@ -109,6 +113,14 @@ impl Cli {
             .ok_or(anyhow::anyhow!("Descriptor error"))?;
         print!("{descriptor}");
         Ok(())
+    }
+
+    fn network(&self) -> Network {
+        if self.testnet {
+            Network::Testnet
+        } else {
+            Network::Bitcoin
+        }
     }
 }
 

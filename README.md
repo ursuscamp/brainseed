@@ -9,8 +9,8 @@ instead of a mnemonic seed phrase.
 
 ```
 $ brainseed seed
-Entropy prompt: hello world
-Confirm: hello world
+> Entropy prompt: hello world
+> Confirm: hello world
 cliff burden nut payment negative soccer one mad pulse balcony force inside
 ```
 
@@ -22,8 +22,8 @@ Directly generate a watch-only output descriptor, to import into a wallet like S
 
 ```
 $ brainseed watch
-Entropy prompt: hello world
-Confirm: hello world
+> Entropy prompt: hello world
+> Confirm: hello world
 wpkh([b343958c/84'/1'/0']tpubDCCj6osNwAnnSqViJQjqHD9xkJ6UXKT73ZB36W5gNapyCmirdibyzHeRsAYK5z9V5fi4ZdGAGA2jbXxPD1qS3Yht2tU3shPuatfUUWvKeCc/0/*)#cj35ttn3
 ```
 ## Signing a transaction
@@ -32,11 +32,25 @@ This can be used to sign files as well, if you don't want to use a seed phrase i
 
 ```
 $ brainseed sign input.psbt output.psbt
-Entropy prompt: hello world
-Confirm: hello world
+> Entropy prompt: hello world
+> Confirm: hello world
 ```
 
 After importing a watch-only wallet into something like Sparrow, generate a transaction and save it as a raw file. Then sign it with this command, and load it back into Sparrow.
+
+## Nostr keys
+
+Nostr's NIP-06 specifies the derivation path for generaing key pair's from Bitcoin seeds. By default, the derivation path is `m/44'/1237'/0'/0/0`. You can now generate key pairs like this:
+
+```
+$ brainseed nostr
+> Entropy prompt: hello world
+> Confirm: hello world
+Private: 69cae0b7638b0eee28044b555dbe9063a3ded632bbfc3d3e3f2778467617d1e6
+Public:  b3a19b7ef2749552db88fd43300db72484c4520a0ee84ae5881df871f1d84369
+```
+
+You can pass `--nip19` to use the bech32 encoding from NIP-19 (better known as the `npub/nsec` encoding). Additionally, you can specify additional indexes on the derivation path by using `-i <NUMBER>`. For instance, `-i 1` will use the derivation path `m/44'/1237'/0'/0/1`. This might be useful if you wish to rotate keys.
 
 ## Frequently Asked Questions
 

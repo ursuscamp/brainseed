@@ -3,8 +3,12 @@ use std::{io::Write, path::PathBuf};
 use anyhow::Context;
 use bdk::{
     bitcoin::{
+        bech32::{encode, ToBase32, Variant},
         consensus::{deserialize, serialize},
+        hashes::hex::ToHex,
         psbt::PartiallySignedTransaction,
+        secp256k1::Secp256k1,
+        util::bip32::{DerivationPath, ExtendedPrivKey},
         Network,
     },
     database::MemoryDatabase,
@@ -42,6 +46,7 @@ impl Cli {
             Action::Seed => self.write_output(seed.to_string().as_bytes()),
             Action::Sign { input, output } => self.sign(input, output, seed),
             Action::Watch => self.show_descriptor(seed),
+            Action::Nostr { nip19, index } => self.nostr(seed, *nip19, *index),
         }
     }
 
@@ -122,6 +127,31 @@ impl Cli {
             Network::Bitcoin
         }
     }
+
+    fn nostr(&self, seed: Mnemonic, nip19: bool, index: u32) -> Result<(), anyhow::Error> {
+        let ctx = Secp256k1::new();
+        let dv: DerivationPath = format!("m/44'/1237'/0'/0/{index}")
+            .parse()
+            .context("Invalid derivation path for nostr")?;
+        let seed = seed.to_seed("");
+        let master = ExtendedPrivKey::new_master(Network::Bitcoin, &seed)?;
+        let xpriv = master.derive_priv(&ctx, &dv)?;
+        let privkey = xpriv.to_priv();
+        let pubkey = privkey.public_key(&ctx);
+
+        let (pubkey, privkey) = match nip19 {
+            true => (
+                encode("nsec", privkey.to_bytes().to_base32(), Variant::Bech32)?,
+                encode("npub", pubkey.to_bytes().to_base32(), Variant::Bech32)?,
+            ),
+            false => (pubkey.to_bytes()[1..].to_hex(), privkey.to_bytes().to_hex()),
+        };
+
+        println!("Private: {privkey}");
+        println!("Public:  {pubkey}");
+
+        Ok(())
+    }
 }
 
 #[derive(clap::Subcommand, Clone)]
@@ -134,4 +164,16 @@ pub enum Action {
 
     /// Show wallet descriptor that is useful for importing as a watch-only wallet.
     Watch,
+
+    /// Generate a Nostr private/public keypair (optionally in NIP-19 encoding).
+    Nostr {
+        /// Serialize the keys according to NIP-19 (npub/nsec format).
+        #[clap(long)]
+        nip19: bool,
+
+        /// Child index for the derivation path m/44'/1237'/0'/0.
+        /// Use this to create additional keys for your seed.
+        #[clap(short, long, default_value_t = 0)]
+        index: u32,
+    },
 }
